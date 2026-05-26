@@ -14,7 +14,7 @@ public class Player : MonoBehaviour
     /// <summary>
     /// показания с A, D
     /// </summary>
-    private float moveX;
+    private Vector2 moveVector;
     /// <summary>
     /// для IsGrounded
     /// </summary>
@@ -35,16 +35,11 @@ public class Player : MonoBehaviour
         inp = new InputSystem();
     }
 
-    private void Update()
-    {
-        //передвижение
-        moveX = inp.Player.Move.ReadValue<Vector2>().x;
-    }
-
     private void FixedUpdate()
     {
-        //передвижение
-        rb.linearVelocityX = moveX * moveSpeed;
+        MoveHandler();
+
+        IsGrounded();
     }
 
     private void OnEnable()
@@ -59,10 +54,10 @@ public class Player : MonoBehaviour
 
     private void OnDisable()
     {
-        //передвижение
+        // передвижение
         inp.Player.Disable();
 
-        //прыжок
+        // прыжок
         inp.Player.Jump.started -= OnJump;
         inp.Player.Jump.canceled -= OnJump;
 
@@ -83,9 +78,23 @@ public class Player : MonoBehaviour
     private bool IsGrounded()
     {
         colBounds = col.bounds;
-        rayOrigin = new Vector2(colBounds.center.x, colBounds.min.y - 0.01f);
-        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.down, checkGroundedDistance);
+        rayOrigin = new Vector2(colBounds.min.x, colBounds.min.y - 0.01f);
+        RaycastHit2D hit1 = Physics2D.Raycast(rayOrigin, Vector2.down, checkGroundedDistance);
+        // Debug.DrawRay(rayOrigin, Vector2.down * checkGroundedDistance, hit1.collider != null ? Color.green : Color.red);
 
-        return hit.collider != null;
+        colBounds = col.bounds;
+        rayOrigin = new Vector2(colBounds.max.x, colBounds.min.y - 0.01f);
+        RaycastHit2D hit2 = Physics2D.Raycast(rayOrigin, Vector2.down, checkGroundedDistance);
+        // Debug.DrawRay(rayOrigin, Vector2.down * checkGroundedDistance, hit2.collider != null ? Color.green : Color.red);
+
+        return hit1.collider != null || hit2.collider != null;
+    }
+
+    private void MoveHandler()
+    {
+        moveVector = inp.Player.Move.ReadValue<Vector2>();
+        rb.linearVelocityX = moveVector.x * moveSpeed;
+        // rb.AddForce(moveVector, ForceMode2D.Force);
+        // Debug.Log(moveVector);
     }
 }
