@@ -1,3 +1,5 @@
+using System.Collections;
+using NUnit.Framework;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,16 +12,31 @@ public class Player : MonoBehaviour
     /// какая часть скорости останется при отпускании кнопки прыжка
     /// </summary>
     [SerializeField] private float canceledJumpSpeedMultiplier = 0.7f; 
+    [SerializeField] private float coyoteTime = 0.5f;
 
     /// <summary>
     /// показания с A, D
     /// </summary>
     private Vector2 moveVector;
     /// <summary>
-    /// для IsGrounded
+    /// для <see cref="GroundedHandler"/>
     /// </summary>
     private float checkGroundedDistance = 0.01f;
-    private Bounds colBounds;
+    /// <summary>
+    /// стоит ли на земле
+    /// </summary>
+    private bool isGrounded;
+    /// <summary>
+    /// как <see cref="isGrounded"/> но с учётом койот-тайма
+    /// </summary>
+    private bool isCanJump;
+    /// <summary>
+    /// костыль, флаг, чтобы не было дабл-прыжка
+    /// </summary>
+    private bool isJustJump;
+    private float coyoteTimeCounter;
+
+    private Bounds colliderBounds;
     private Vector2 rayOrigin;
 
     private Rigidbody2D rb;
@@ -35,11 +52,14 @@ public class Player : MonoBehaviour
         inp = new InputSystem();
     }
 
+    private void Update()
+    {
+        GroundedHandler();
+    }
+
     private void FixedUpdate()
     {
         MoveHandler();
-
-        IsGrounded();
     }
 
     private void OnEnable()
@@ -65,36 +85,67 @@ public class Player : MonoBehaviour
 
     private void OnJump(InputAction.CallbackContext context)
     {
-        if (context.started && IsGrounded())
+        if (context.started && isCanJump)
         {
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            coyoteTimeCounter = 0f;
+            isJustJump = true;
         }
         else if (context.canceled && rb.linearVelocityY > 0)
         {
             rb.linearVelocityY *= canceledJumpSpeedMultiplier;
+            isJustJump = false;
         }
     }
 
-    private bool IsGrounded()
+    /// <summary>
+    /// обновляет <see cref="isGrounded"/> и <see cref="isCanJump"/>
+    /// </summary>
+    private void GroundedHandler()
     {
-        colBounds = col.bounds;
-        rayOrigin = new Vector2(colBounds.min.x, colBounds.min.y - 0.01f);
+        colliderBounds = col.bounds;
+        rayOrigin = new Vector2(colliderBounds.min.x, colliderBounds.min.y - 0.01f);
         RaycastHit2D hit1 = Physics2D.Raycast(rayOrigin, Vector2.down, checkGroundedDistance);
-        // Debug.DrawRay(rayOrigin, Vector2.down * checkGroundedDistance, hit1.collider != null ? Color.green : Color.red);
 
-        colBounds = col.bounds;
-        rayOrigin = new Vector2(colBounds.max.x, colBounds.min.y - 0.01f);
+        colliderBounds = col.bounds;
+        rayOrigin = new Vector2(colliderBounds.max.x, colliderBounds.min.y - 0.01f);
         RaycastHit2D hit2 = Physics2D.Raycast(rayOrigin, Vector2.down, checkGroundedDistance);
-        // Debug.DrawRay(rayOrigin, Vector2.down * checkGroundedDistance, hit2.collider != null ? Color.green : Color.red);
 
-        return hit1.collider != null || hit2.collider != null;
+        if (hit1.collider != null || hit2.collider != null)
+        {
+            isGrounded = true;
+
+            if (!isJustJump) 
+            {
+                coyoteTimeCounter = coyoteTime;
+            }
+        }
+        else
+        {
+            isGrounded = false;
+            coyoteTimeCounter -= Time.deltaTime;
+        }
+
+        if (isGrounded || coyoteTimeCounter > 0f)
+        {
+            isCanJump = true;
+        }
+        else
+        {
+            isCanJump = false;
+        }
+    }
+
+    private IEnumerator CoyoteRoutine()
+    {
+        yield return new WaitForSeconds(coyoteTime);
+
+        isGrounded = false;
     }
 
     private void MoveHandler()
     {
         moveVector = inp.Player.Move.ReadValue<Vector2>();
         rb.linearVelocityX = moveVector.x * moveSpeed;
-        // rb.AddForce(moveVector, ForceMode2D.Force);
-        // Debug.Log(moveVector);
     }
 }
