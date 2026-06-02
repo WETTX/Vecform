@@ -18,17 +18,17 @@ public class Player : MonoBehaviour
     [Header("Physics")]
     [SerializeField] private float externalForceDecayVelocity = 5f; // скорость угасания внешних импульсов
     [SerializeField] private float jumpForceDecayVelocity = 5f; // скорость угасания импульса прыжка
-
-    [SerializeField] private float gravityScale = 1f; // менять только когда игра не запущена
+                                                                // чтобы было удобнее управлять вручную направлением
+    [SerializeField] private float fastJumpForceDecayVelocity = 10f; // используется когда началось падение 
+                                                                     // чтобы не было эффекта плавного падения
+    [SerializeField] private float gravityScale = 1f;
+    // [SerializeField] private float gravityAcceleration = 5f; // как быстро игрок приобретет максимальную скорость во время падения с обрыва
 
     [Space(5)]
     [Header("Debug")]
     [SerializeField] private Vector2 kaboomVector;
     [SerializeField] private float kaboomVectorMultiplier;
-    /// <summary>
-    /// будет ли ветер
-    /// </summary>
-    [SerializeField] private bool wind = false;
+    [SerializeField] private bool wind = false; // будет ли ветер
     [SerializeField] private Vector2 windVector;
     [SerializeField] private float windVectorMultiplier = 0;
 
@@ -39,7 +39,14 @@ public class Player : MonoBehaviour
     private float coyoteTimeCounter;
     private Vector2 jumpForce; // отдельно чтобы был красивый контроль прыжка
     private Vector2 externalForce;
-    private Vector2 zeroExternalForce = new Vector2(0f, -9.8f); // 9.8 это гравитация
+    private Vector2 gravityVector = Vector2.down;
+
+    private float gravityForce; // сделано не так как другие силы
+                                // чтобы было удобнее управлять вручную направлением
+    private float totalGravityScale; /// <see cref="gravityScale"/> * 9.8 для удобства
+
+    // private Vector2 zeroExternalForce = new Vector2(0f, -9.8f); // 9.8 это гравитация
+
 
 
     private Rigidbody2D rb;
@@ -56,9 +63,19 @@ public class Player : MonoBehaviour
         inp = new InputSystem();
     }
 
+    private void Start()
+    {
+        totalGravityScale = gravityScale * 9.8f;
+    }
+
     private void Update()
     {
         GroundedHandler();
+
+        // Debug.Log(jumpForce);
+        // Debug.Log(rb.linearVelocityY);
+        Debug.Log(gravityForce);
+
     }
 
     private void FixedUpdate()
@@ -114,7 +131,6 @@ public class Player : MonoBehaviour
         }
         else if (context.canceled && rb.linearVelocityY > 1f)
         {
-            // rb.linearVelocityY *= canceledJumpSpeedMultiplier;
             jumpForce.y *= canceledJumpSpeedMultiplier;
             isJustJump = false;
         }
@@ -176,13 +192,39 @@ public class Player : MonoBehaviour
 
     private void MoveHandler()
     {
-        Vector2 moveVector = inp.Player.Move.ReadValue<Vector2>(); // показания с A, D
+        if (rb.linearVelocityY > -1f)
+        {
+            gravityForce = totalGravityScale;
+        }
+        else
+        {
+            gravityForce += totalGravityScale * Time.deltaTime;
+        }
 
+        Vector2 moveVector = inp.Player.Move.ReadValue<Vector2>(); // показания с A, D
         Vector2 internalForce = moveVector * moveSpeed;
 
-        rb.linearVelocity = internalForce + externalForce + jumpForce;
+        rb.linearVelocity = internalForce + externalForce + jumpForce + gravityVector * gravityForce;
 
-        externalForce = Vector2.Lerp(externalForce, zeroExternalForce * gravityScale, externalForceDecayVelocity * Time.deltaTime); // угасание для Impulse
-        jumpForce = Vector2.Lerp(jumpForce, Vector2.zero, jumpForceDecayVelocity * Time.deltaTime);
+        // externalForce = Vector2.Lerp(externalForce, zeroExternalForce * gravityScale, externalForceDecayVelocity * Time.deltaTime); // угасание для Impulse
+        externalForce = Vector2.Lerp(externalForce, Vector2.zero, externalForceDecayVelocity * Time.deltaTime); // угасание для Impulse
+
+        if (jumpForce.y > gravityForce)
+        {
+            jumpForce = Vector2.Lerp(jumpForce, Vector2.zero, jumpForceDecayVelocity * Time.deltaTime);
+        }
+        else
+        {
+            jumpForce = Vector2.Lerp(jumpForce, Vector2.zero, fastJumpForceDecayVelocity * Time.deltaTime);
+        }
+
+        if (Mathf.Abs(rb.linearVelocityX) < 0.1f)
+        {
+            rb.linearVelocityX = 0;
+        }
+        if (Mathf.Abs(rb.linearVelocityY) < 0.1f)
+        {
+            rb.linearVelocityY = 0;
+        }
     }
 }
