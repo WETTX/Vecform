@@ -472,7 +472,8 @@
 -analyzer:"C:/Program Files/Unity/Hub/Editor/6000.3.11f1/Editor/Data/Tools/BuildPipeline/Unity.SourceGenerators/Unity.UIToolkit.SourceGenerator.dll"
 "Assets/InputSystem.cs"
 "Assets/InputSystem_Actions.cs"
-"Assets/Scripts/Player/Player.cs"
+"Assets/Scripts/Player/PlayerDebug.cs"
+"Assets/Scripts/Player/PlayerMove.cs"
 -langversion:9.0
 /deterministic
 /optimize+
