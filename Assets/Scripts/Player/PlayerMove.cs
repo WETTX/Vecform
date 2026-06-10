@@ -15,12 +15,13 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private float jumpScale = 10f;
     [SerializeField] private float canceledJumpSpeedMultiplier = 0.7f; // какая часть скорости останется при отпускании кнопки прыжка
     [SerializeField] private float coyoteTime = 0.5f;
+    [Tooltip("NOT 0")]
+    [SerializeField] private float jumpBufferTime = 0.15f; // NOT 0
 
     [Space(5)]
     [Header("Physics")]
     [SerializeField] private float externalForceDecayVelocity = 5f; // скорость угасания внешних импульсов
     [SerializeField] private float jumpForceDecayVelocity = 5f; // скорость угасания импульса прыжка
-                                                                // чтобы было удобнее управлять вручную направлением
     [SerializeField] private float fastJumpForceDecayVelocity = 10f; // используется когда началось падение 
                                                                      // чтобы не было эффекта плавного падения
     [SerializeField] private float gravityScale = 1f;
@@ -29,12 +30,11 @@ public class PlayerMove : MonoBehaviour
     private bool isCanJump; /// как <see cref="isGrounded"/> но с учётом койот-тайма
     private bool isJustJump; // костыль, флаг, чтобы не было дабл-прыжка
     private float coyoteTimeCounter;
+    private float jumpBufferTimeCounter;
     private Vector2 jumpForce; // отдельно чтобы был красивый контроль прыжка
     private Vector2 externalForce;
     private Vector2 gravityVector = Vector2.down;
-
-    private float gravityForce; // сделано не так как другие силы
-                                // чтобы было удобнее управлять вручную направлением
+    private float gravityForce; // сделано не так как другие силы чтобы было удобнее управлять вручную направлением
     private float totalGravityScale; /// <see cref="gravityScale"/> * 9.8 для удобства
 
 
@@ -61,12 +61,13 @@ public class PlayerMove : MonoBehaviour
 
     private void Update()
     {
-        GroundedHandler();
+        GroundedHandle();
     }
 
     private void FixedUpdate()
     {
-        MoveHandler();
+        MoveHandle();
+        JumpHandle();
     }
 
     public void ApplyForce(Vector2 force, ForceMode2D forceMode)
@@ -82,8 +83,8 @@ public class PlayerMove : MonoBehaviour
         inp.Player.Enable();
 
         //прыжок
-        inp.Player.Jump.started += OnJump;
-        inp.Player.Jump.canceled += OnJump;
+        inp.Player.Jump.started += OnJumpBuffer;
+        inp.Player.Jump.canceled += OnJumpCanceled;
     }
 
     private void OnDisable()
@@ -92,27 +93,39 @@ public class PlayerMove : MonoBehaviour
         inp.Player.Disable();
 
         // прыжок
-        inp.Player.Jump.started -= OnJump;
-        inp.Player.Jump.canceled -= OnJump;
+        inp.Player.Jump.started -= OnJumpBuffer;
+        inp.Player.Jump.canceled -= OnJumpCanceled;
     }
 
-    private void OnJump(InputAction.CallbackContext context)
+    private void OnJumpBuffer(InputAction.CallbackContext context) // начинает таймер буфера
     {
-        if (context.started && isCanJump)
+        jumpBufferTimeCounter = jumpBufferTime;
+    }
+
+    private void JumpHandle()
+    {
+        if (jumpBufferTimeCounter > 0 && isCanJump)
         {
             jumpForce.y += jumpScale;
             coyoteTimeCounter = 0f;
+            jumpBufferTimeCounter = 0f;
             isJustJump = true;
             // Debug.Log("jump");
         }
-        else if (context.canceled && rb.linearVelocityY > 1f)
+
+        jumpBufferTimeCounter -= Time.deltaTime;
+    }
+
+    private void OnJumpCanceled(InputAction.CallbackContext context) // отвечает за контроль прыжка
+    {
+        if (rb.linearVelocityY > 1f)
         {
             jumpForce.y *= canceledJumpSpeedMultiplier;
             isJustJump = false;
         }
     }
 
-    private void GroundedHandler() /// обновляет <see cref="isGrounded"/> и <see cref="isCanJump"/>
+    private void GroundedHandle() /// обновляет <see cref="isGrounded"/> и <see cref="isCanJump"/>
     {
         Bounds colliderBounds;
         Vector2 rayOrigin;
@@ -151,7 +164,7 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
-    private void MoveHandler()
+    private void MoveHandle()
     {
         if (rb.linearVelocityY > -1f)
         {
