@@ -26,8 +26,6 @@ public class PlayerMove : MonoBehaviour
                                                                      // чтобы не было эффекта плавного падения
     [SerializeField] private float gravityScale = 1f;
 
-    private bool isGrounded; // стоит ли на земле
-    private bool isCanJump; /// как <see cref="isGrounded"/> но с учётом койот-тайма
     private bool isJustJump; // костыль, флаг, чтобы не было дабл-прыжка
     private float coyoteTimeCounter;
     private float jumpBufferTimeCounter;
@@ -61,7 +59,7 @@ public class PlayerMove : MonoBehaviour
 
     private void Update()
     {
-        GroundedHandle();
+        CoyotTimeCounterHandle();
     }
 
     private void FixedUpdate()
@@ -104,7 +102,7 @@ public class PlayerMove : MonoBehaviour
 
     private void JumpHandle()
     {
-        if (jumpBufferTimeCounter > 0 && isCanJump)
+        if (jumpBufferTimeCounter > 0 && IsCanJump())
         {
             jumpForce.y += jumpScale;
             coyoteTimeCounter = 0f;
@@ -125,7 +123,19 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
-    private void GroundedHandle() /// обновляет <see cref="isGrounded"/> и <see cref="isCanJump"/>
+    private void CoyotTimeCounterHandle()
+    {
+        if (IsGrounded() && !isJustJump)
+        {
+            coyoteTimeCounter = coyoteTime;
+        }
+        else
+        {
+            coyoteTimeCounter -= Time.deltaTime;
+        }
+    }
+
+    private bool IsGrounded()
     {
         Bounds colliderBounds;
         Vector2 rayOrigin;
@@ -139,30 +149,15 @@ public class PlayerMove : MonoBehaviour
         rayOrigin = new Vector2(colliderBounds.max.x, colliderBounds.min.y - 0.01f);
         RaycastHit2D hit2 = Physics2D.Raycast(rayOrigin, Vector2.down, checkGroundedDistance);
 
-        if (hit1.collider != null || hit2.collider != null)
-        {
-            isGrounded = true;
-
-            if (!isJustJump)
-            {
-                coyoteTimeCounter = coyoteTime;
-            }
-        }
-        else
-        {
-            isGrounded = false;
-            coyoteTimeCounter -= Time.deltaTime;
-        }
-
-        if (isGrounded || coyoteTimeCounter > 0f)
-        {
-            isCanJump = true;
-        }
-        else
-        {
-            isCanJump = false;
-        }
+        return hit1.collider != null || hit2.collider != null;
     }
+
+    private bool IsCanJump()
+    {
+        return IsGrounded() || coyoteTimeCounter > 0f;
+    }
+
+    private void CeilingHandle() { }
 
     private void MoveHandle()
     {

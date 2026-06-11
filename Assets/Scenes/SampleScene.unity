@@ -1323,14 +1323,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
   moveSpeed: 20
-  jumpScale: 93
+  jumpScale: 112
   canceledJumpSpeedMultiplier: 0.3
   coyoteTime: 0.08
   jumpBufferTime: 0.1
   externalForceDecayVelocity: 10
   jumpForceDecayVelocity: 5
   fastJumpForceDecayVelocity: 10
-  gravityScale: 2
+  gravityScale: 2.8
 --- !u!114 &910394722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1344,7 +1344,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDebug
   kaboomVector: {x: 1, y: 0}
-  kaboomScale: 93
+  kaboomScale: 100
   wind: 0
   windVector: {x: -1, y: 0}
   windScale: 50
