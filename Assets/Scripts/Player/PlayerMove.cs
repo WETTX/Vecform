@@ -72,6 +72,8 @@ public class PlayerMove : MonoBehaviour
     private void Update()
     {
         CoyotTimeCounterHandle();
+
+        Debug.Log(_gravityForce);
     }
 
     private void FixedUpdate()
@@ -174,7 +176,7 @@ public class PlayerMove : MonoBehaviour
     private void ForcesHandle() // обрабатывает силы и движение игрока
     {
         // плавное ускорение
-        if (rb.linearVelocityY > -1f)
+        if (rb.linearVelocityY > -1f && IsGrounded())
         {
             _gravityForce = _totalGravityScale;
         }
@@ -188,6 +190,8 @@ public class PlayerMove : MonoBehaviour
         _internalForce = moveVector * _moveSpeed;
 
         // применение общей скорости с учётом удара о потолок
+        if (IsCeiling() && totalForce.y > 0) { ResetForcesY(); } // для отскока от потолка
+
         rb.linearVelocity = totalForce;
 
         // угасание для Impulse
@@ -214,5 +218,10 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
-    //private void ResetForces()
+    private void ResetForcesY()
+    {
+        _internalForce.y = 0f;
+        _jumpForce.y = 0f;
+        _externalForce.y = 0f;
+    }
 }
