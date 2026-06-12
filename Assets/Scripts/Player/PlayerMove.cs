@@ -25,13 +25,17 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private float _fastJumpForceDecayVelocity = 10f; // используется когда началось падение чтобы не было эффекта плавного падения после прыжка
     [SerializeField] private float _gravityScale = 1f;
 
-    private float _coyoteTimeCounter;
-    private float _jumpBufferTimeCounter;
+    // силы
+    private Vector2 _internalForce;
     private Vector2 _jumpForce; // отдельно чтобы был красивый контроль прыжка
     private Vector2 _externalForce;
     private Vector2 _gravityVector = Vector2.down;
     private float _gravityForce; // сделано не так как другие силы чтобы было удобнее вручную управлять направлением
-    private float _totalGravityScale; /// <see cref="_gravityScale"/> * 9.8 + ускорение (для удобства)
+    private Vector2 totalForce => _internalForce + _externalForce + _jumpForce + _gravityVector * _gravityForce;
+
+    private float _coyoteTimeCounter;
+    private float _jumpBufferTimeCounter;
+    private float _totalGravityScale => _gravityScale * 9.8f; /// для удобства
 
 
     private Rigidbody2D rb;
@@ -53,10 +57,17 @@ public class PlayerMove : MonoBehaviour
         inp = new InputSystem();
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        _totalGravityScale = _gravityScale * 9.8f;
+        //передвижение
+        inp.Player.Enable();
+
+        //прыжок
+        inp.Player.Jump.started += OnJumpBuffer;
+        inp.Player.Jump.canceled += OnJumpCanceled;
     }
+
+    private void Start() { }
 
     private void Update()
     {
@@ -69,23 +80,6 @@ public class PlayerMove : MonoBehaviour
         JumpHandle();
     }
 
-    public void ApplyForce(Vector2 force, ForceMode2D forceMode)
-    {
-        if (forceMode == ForceMode2D.Force) { _externalForce += force * Time.deltaTime; }
-
-        else if (forceMode == ForceMode2D.Impulse) { _externalForce += force; }
-    }
-
-    private void OnEnable()
-    {
-        //передвижение
-        inp.Player.Enable();
-
-        //прыжок
-        inp.Player.Jump.started += OnJumpBuffer;
-        inp.Player.Jump.canceled += OnJumpCanceled;
-    }
-
     private void OnDisable()
     {
         // передвижение
@@ -94,6 +88,13 @@ public class PlayerMove : MonoBehaviour
         // прыжок
         inp.Player.Jump.started -= OnJumpBuffer;
         inp.Player.Jump.canceled -= OnJumpCanceled;
+    }
+
+    public void ApplyForce(Vector2 force, ForceMode2D forceMode)
+    {
+        if (forceMode == ForceMode2D.Force) { _externalForce += force * Time.deltaTime; }
+
+        else if (forceMode == ForceMode2D.Impulse) { _externalForce += force; }
     }
 
     private void OnJumpBuffer(InputAction.CallbackContext context) // начинает таймер буфера
@@ -187,8 +188,6 @@ public class PlayerMove : MonoBehaviour
         Vector2 internalForce = moveVector * _moveSpeed;
 
         // применение общей скорости с учётом удара о потолок
-        Vector2 totalForce = internalForce + _externalForce + _jumpForce + _gravityVector * _gravityForce;
-        if (IsCeiling()) { ApplyForce(Vector2.down * (totalForce.y * 2), ForceMode2D.Impulse); }
         rb.linearVelocity = totalForce;
 
         // угасание для Impulse
@@ -216,4 +215,11 @@ public class PlayerMove : MonoBehaviour
     }
 
     // private void ResetForces()
+
+    private enum Axis { x, y }
+
+    private enum Forces
+    {
+        initial
+    }
 }
