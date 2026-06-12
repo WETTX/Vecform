@@ -45,7 +45,7 @@ public class PlayerMove : MonoBehaviour
 
     public bool IsCanJump { get { return IsGrounded() || _coyoteTimeCounter > 0f; } }
 
-    public bool isJustJump { get; private set; } // костыль, флаг, чтобы не было дабл-прыжка
+    public bool IsJustJump { get; private set; } // костыль, флаг, чтобы не было дабл-прыжка
 
     private void Awake()
     {
@@ -109,7 +109,7 @@ public class PlayerMove : MonoBehaviour
             _jumpForce.y += _jumpScale;
             _coyoteTimeCounter = 0f;
             _jumpBufferTimeCounter = 0f;
-            isJustJump = true;
+            IsJustJump = true;
             // Debug.Log("jump");
         }
 
@@ -121,13 +121,13 @@ public class PlayerMove : MonoBehaviour
         if (rb.linearVelocityY > 1f)
         {
             _jumpForce.y *= _canceledJumpSpeedMultiplier;
-            isJustJump = false;
         }
+        IsJustJump = false;
     }
 
     private void CoyotTimeCounterHandle()
     {
-        if (IsGrounded() && !isJustJump)
+        if (IsGrounded() && !IsJustJump)
         {
             _coyoteTimeCounter = _coyoteTime;
         }
@@ -214,12 +214,5 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
-    // private void ResetForces()
-
-    private enum Axis { x, y }
-
-    private enum Forces
-    {
-        initial
-    }
+    //private void ResetForces()
 }
