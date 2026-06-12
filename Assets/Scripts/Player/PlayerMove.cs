@@ -11,19 +11,19 @@ public class PlayerMove : MonoBehaviour
     public static PlayerMove Instance { get; private set; }
 
     [Header("Move")]
-    [SerializeField] private float _moveSpeed = 10f;
-    [SerializeField] private float _jumpScale = 10f;
-    [SerializeField] private float _canceledJumpSpeedMultiplier = 0.7f; // какая часть скорости останется при отпускании кнопки прыжка
-    [SerializeField] private float _coyoteTime = 0.5f;
+    [SerializeField] private float _moveSpeed = 23f;
+    [SerializeField] private float _jumpScale = 121f;
+    [SerializeField] private float _canceledJumpSpeedMultiplier = 0.3f; // какая часть скорости останется при отпускании кнопки прыжка
+    [SerializeField] private float _coyoteTime = 0.08f;
     [Tooltip("NOT 0")]
-    [SerializeField] private float _jumpBufferTime = 0.15f; // NOT 0
+    [SerializeField] private float _jumpBufferTime = 0.08f; // NOT 0
 
     [Space(5)]
     [Header("Physics")]
     [SerializeField] private float _externalForceDecayVelocity = 5f; // скорость угасания внешних импульсов
     [SerializeField] private float _jumpForceDecayVelocity = 5f; // скорость угасания импульса прыжка
-    [SerializeField] private float _fastJumpForceDecayVelocity = 10f; // используется когда началось падение чтобы не было эффекта плавного падения после прыжка
-    [SerializeField] private float _gravityScale = 1f;
+    [SerializeField] private float _fastJumpForceDecayVelocity = 15f; // используется когда началось падение чтобы не было эффекта плавного падения после прыжка
+    [SerializeField] private float _gravityScale = 3.5f;
 
     // силы
     private Vector2 _internalForce;
@@ -185,7 +185,7 @@ public class PlayerMove : MonoBehaviour
 
         // внутренняя скорость
         Vector2 moveVector = inp.Player.Move.ReadValue<Vector2>(); // показания с A, D
-        Vector2 internalForce = moveVector * _moveSpeed;
+        _internalForce = moveVector * _moveSpeed;
 
         // применение общей скорости с учётом удара о потолок
         rb.linearVelocity = totalForce;

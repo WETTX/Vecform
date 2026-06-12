@@ -1394,15 +1394,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b4e7e4e17c203644a48bc48b474f5e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  moveSpeed: 20
-  jumpScale: 112
-  canceledJumpSpeedMultiplier: 0.3
-  coyoteTime: 0.08
-  jumpBufferTime: 0.1
-  externalForceDecayVelocity: 10
-  jumpForceDecayVelocity: 5
-  fastJumpForceDecayVelocity: 10
-  gravityScale: 2.8
+  _moveSpeed: 23
+  _jumpScale: 121
+  _canceledJumpSpeedMultiplier: 0.3
+  _coyoteTime: 0.08
+  _jumpBufferTime: 0.08
+  _externalForceDecayVelocity: 5
+  _jumpForceDecayVelocity: 5
+  _fastJumpForceDecayVelocity: 15
+  _gravityScale: 3.5
 --- !u!114 &910394722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1416,7 +1416,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDebug
   kaboomVector: {x: 0, y: 1}
-  kaboomScale: 200
+  kaboomScale: 150
   wind: 0
   windVector: {x: -1, y: 0}
   windScale: 50
