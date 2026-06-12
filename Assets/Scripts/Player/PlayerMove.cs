@@ -11,29 +11,27 @@ public class PlayerMove : MonoBehaviour
     public static PlayerMove Instance { get; private set; }
 
     [Header("Move")]
-    [SerializeField] private float moveSpeed = 10f;
-    [SerializeField] private float jumpScale = 10f;
-    [SerializeField] private float canceledJumpSpeedMultiplier = 0.7f; // какая часть скорости останется при отпускании кнопки прыжка
-    [SerializeField] private float coyoteTime = 0.5f;
+    [SerializeField] private float _moveSpeed = 10f;
+    [SerializeField] private float _jumpScale = 10f;
+    [SerializeField] private float _canceledJumpSpeedMultiplier = 0.7f; // какая часть скорости останется при отпускании кнопки прыжка
+    [SerializeField] private float _coyoteTime = 0.5f;
     [Tooltip("NOT 0")]
-    [SerializeField] private float jumpBufferTime = 0.15f; // NOT 0
+    [SerializeField] private float _jumpBufferTime = 0.15f; // NOT 0
 
     [Space(5)]
     [Header("Physics")]
-    [SerializeField] private float externalForceDecayVelocity = 5f; // скорость угасания внешних импульсов
-    [SerializeField] private float jumpForceDecayVelocity = 5f; // скорость угасания импульса прыжка
-    [SerializeField] private float fastJumpForceDecayVelocity = 10f; // используется когда началось падение 
-                                                                     // чтобы не было эффекта плавного падения
-    [SerializeField] private float gravityScale = 1f;
+    [SerializeField] private float _externalForceDecayVelocity = 5f; // скорость угасания внешних импульсов
+    [SerializeField] private float _jumpForceDecayVelocity = 5f; // скорость угасания импульса прыжка
+    [SerializeField] private float _fastJumpForceDecayVelocity = 10f; // используется когда началось падение чтобы не было эффекта плавного падения после прыжка
+    [SerializeField] private float _gravityScale = 1f;
 
-    private bool isJustJump; // костыль, флаг, чтобы не было дабл-прыжка
-    private float coyoteTimeCounter;
-    private float jumpBufferTimeCounter;
-    private Vector2 jumpForce; // отдельно чтобы был красивый контроль прыжка
-    private Vector2 externalForce;
-    private Vector2 gravityVector = Vector2.down;
-    private float gravityForce; // сделано не так как другие силы чтобы было удобнее управлять вручную направлением
-    private float totalGravityScale; /// <see cref="gravityScale"/> * 9.8 для удобства
+    private float _coyoteTimeCounter;
+    private float _jumpBufferTimeCounter;
+    private Vector2 _jumpForce; // отдельно чтобы был красивый контроль прыжка
+    private Vector2 _externalForce;
+    private Vector2 _gravityVector = Vector2.down;
+    private float _gravityForce; // сделано не так как другие силы чтобы было удобнее вручную управлять направлением
+    private float _totalGravityScale; /// <see cref="_gravityScale"/> * 9.8 + ускорение (для удобства)
 
 
     private Rigidbody2D rb;
@@ -41,6 +39,9 @@ public class PlayerMove : MonoBehaviour
     private InputSystem inp;
 
 
+    public bool IsCanJump { get { return IsGrounded() || _coyoteTimeCounter > 0f; } }
+
+    public bool isJustJump { get; private set; } // костыль, флаг, чтобы не было дабл-прыжка
 
     private void Awake()
     {
@@ -54,7 +55,7 @@ public class PlayerMove : MonoBehaviour
 
     private void Start()
     {
-        totalGravityScale = gravityScale * 9.8f;
+        _totalGravityScale = _gravityScale * 9.8f;
     }
 
     private void Update()
@@ -64,15 +65,15 @@ public class PlayerMove : MonoBehaviour
 
     private void FixedUpdate()
     {
-        MoveHandle();
+        ForcesHandle();
         JumpHandle();
     }
 
     public void ApplyForce(Vector2 force, ForceMode2D forceMode)
     {
-        if (forceMode == ForceMode2D.Force) { externalForce += force * Time.deltaTime; }
+        if (forceMode == ForceMode2D.Force) { _externalForce += force * Time.deltaTime; }
 
-        else if (forceMode == ForceMode2D.Impulse) { externalForce += force; }
+        else if (forceMode == ForceMode2D.Impulse) { _externalForce += force; }
     }
 
     private void OnEnable()
@@ -97,28 +98,28 @@ public class PlayerMove : MonoBehaviour
 
     private void OnJumpBuffer(InputAction.CallbackContext context) // начинает таймер буфера
     {
-        jumpBufferTimeCounter = jumpBufferTime;
+        _jumpBufferTimeCounter = _jumpBufferTime;
     }
 
     private void JumpHandle()
     {
-        if (jumpBufferTimeCounter > 0 && IsCanJump())
+        if (_jumpBufferTimeCounter > 0 && IsCanJump)
         {
-            jumpForce.y += jumpScale;
-            coyoteTimeCounter = 0f;
-            jumpBufferTimeCounter = 0f;
+            _jumpForce.y += _jumpScale;
+            _coyoteTimeCounter = 0f;
+            _jumpBufferTimeCounter = 0f;
             isJustJump = true;
             // Debug.Log("jump");
         }
 
-        jumpBufferTimeCounter -= Time.deltaTime;
+        _jumpBufferTimeCounter -= Time.deltaTime;
     }
 
     private void OnJumpCanceled(InputAction.CallbackContext context) // отвечает за контроль прыжка
     {
         if (rb.linearVelocityY > 1f)
         {
-            jumpForce.y *= canceledJumpSpeedMultiplier;
+            _jumpForce.y *= _canceledJumpSpeedMultiplier;
             isJustJump = false;
         }
     }
@@ -127,11 +128,11 @@ public class PlayerMove : MonoBehaviour
     {
         if (IsGrounded() && !isJustJump)
         {
-            coyoteTimeCounter = coyoteTime;
+            _coyoteTimeCounter = _coyoteTime;
         }
         else
         {
-            coyoteTimeCounter -= Time.deltaTime;
+            _coyoteTimeCounter -= Time.deltaTime;
         }
     }
 
@@ -142,55 +143,68 @@ public class PlayerMove : MonoBehaviour
         float checkGroundedDistance = 0.01f;
 
         colliderBounds = col.bounds;
-        rayOrigin = new Vector2(colliderBounds.min.x, colliderBounds.min.y - 0.01f);
+        rayOrigin = new Vector2(colliderBounds.min.x, colliderBounds.min.y - 0.01f); // 0.01 чтобы не срабатывало на игрока
         RaycastHit2D hit1 = Physics2D.Raycast(rayOrigin, Vector2.down, checkGroundedDistance);
 
         colliderBounds = col.bounds;
-        rayOrigin = new Vector2(colliderBounds.max.x, colliderBounds.min.y - 0.01f);
+        rayOrigin = new Vector2(colliderBounds.max.x, colliderBounds.min.y - 0.01f); // 0.01 чтобы не срабатывало на игрока
         RaycastHit2D hit2 = Physics2D.Raycast(rayOrigin, Vector2.down, checkGroundedDistance);
 
         return hit1.collider != null || hit2.collider != null;
     }
 
-    private bool IsCanJump()
+    private bool IsCeiling() // касается ли потолка
     {
-        return IsGrounded() || coyoteTimeCounter > 0f;
+        Bounds colliderBounds;
+        Vector2 rayOrigin;
+        float checkGroundedDistance = 0.01f;
+
+        colliderBounds = col.bounds;
+        rayOrigin = new Vector2(colliderBounds.min.x, colliderBounds.max.y + 0.01f); // 0.01 чтобы не срабатывало на игрока
+        RaycastHit2D hit1 = Physics2D.Raycast(rayOrigin, Vector2.up, checkGroundedDistance);
+
+        colliderBounds = col.bounds;
+        rayOrigin = new Vector2(colliderBounds.max.x, colliderBounds.max.y + 0.01f); // 0.01 чтобы не срабатывало на игрока
+        RaycastHit2D hit2 = Physics2D.Raycast(rayOrigin, Vector2.up, checkGroundedDistance);
+
+        return hit1.collider != null || hit2.collider != null;
     }
 
-    private void CeilingHandle() { }
-
-    private void MoveHandle()
+    private void ForcesHandle() // обрабатывает силы и движение игрока
     {
+        // плавное ускорение
         if (rb.linearVelocityY > -1f)
         {
-            gravityForce = totalGravityScale;
+            _gravityForce = _totalGravityScale;
         }
         else
         {
-            gravityForce += totalGravityScale * Time.deltaTime;
+            _gravityForce += _totalGravityScale * Time.deltaTime;
         }
 
+        // внутренняя скорость
         Vector2 moveVector = inp.Player.Move.ReadValue<Vector2>(); // показания с A, D
-        Vector2 internalForce = moveVector * moveSpeed;
+        Vector2 internalForce = moveVector * _moveSpeed;
 
-        // Debug.Log(moveVector);
-        // Debug.Log(internalForce);
+        // применение общей скорости с учётом удара о потолок
+        Vector2 totalForce = internalForce + _externalForce + _jumpForce + _gravityVector * _gravityForce;
+        if (IsCeiling()) { ApplyForce(Vector2.down * (totalForce.y * 2), ForceMode2D.Impulse); }
+        rb.linearVelocity = totalForce;
 
-        rb.linearVelocity = internalForce + externalForce + jumpForce + gravityVector * gravityForce;
+        // угасание для Impulse
+        _externalForce = Vector2.Lerp(_externalForce, Vector2.zero, _externalForceDecayVelocity * Time.deltaTime);
 
-        // Debug.Log(externalForce);
-
-        externalForce = Vector2.Lerp(externalForce, Vector2.zero, externalForceDecayVelocity * Time.deltaTime); // угасание для Impulse
-
-        if (jumpForce.y > gravityForce)
+        // угасание для прыжка
+        if (_jumpForce.y > _gravityForce)
         {
-            jumpForce = Vector2.Lerp(jumpForce, Vector2.zero, jumpForceDecayVelocity * Time.deltaTime);
+            _jumpForce = Vector2.Lerp(_jumpForce, Vector2.zero, _jumpForceDecayVelocity * Time.deltaTime);
         }
         else
         {
-            jumpForce = Vector2.Lerp(jumpForce, Vector2.zero, fastJumpForceDecayVelocity * Time.deltaTime);
+            _jumpForce = Vector2.Lerp(_jumpForce, Vector2.zero, _fastJumpForceDecayVelocity * Time.deltaTime);
         }
 
+        // обнуление малой скорости
         if (Mathf.Abs(rb.linearVelocityX) < 0.1f)
         {
             rb.linearVelocityX = 0;
@@ -200,4 +214,6 @@ public class PlayerMove : MonoBehaviour
             rb.linearVelocityY = 0;
         }
     }
+
+    // private void ResetForces()
 }

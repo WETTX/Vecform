@@ -234,6 +234,14 @@ CompositeCollider2D:
   m_ColliderPaths:
   - m_Collider: {fileID: 58690969}
     m_ColliderPaths:
+    - - X: -60000000
+        Y: 70000000
+      - X: -120000000
+        Y: 70000000
+      - X: -120000000
+        Y: 60000000
+      - X: -60000000
+        Y: 60000000
     - - X: 150000000
         Y: -20000000
       - X: -310000000
@@ -244,6 +252,10 @@ CompositeCollider2D:
         Y: -30000000
   m_CompositePaths:
     m_Paths:
+    - - {x: -6.000029, y: 6}
+      - {x: -6.000029, y: 7}
+      - {x: -12, y: 6.9999704}
+      - {x: -11.99997, y: 6}
     - - {x: 14.999971, y: -3}
       - {x: 14.999971, y: -2}
       - {x: -31, y: -2.0000293}
@@ -804,15 +816,75 @@ Tilemap:
       m_TileObjectToInstantiateIndex: 65535
       dummyAlignment: 0
       m_AllTileFlags: 1073741826
+  - first: {x: -12, y: 6, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 0
+      m_TileSpriteIndex: 0
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741826
+  - first: {x: -11, y: 6, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 0
+      m_TileSpriteIndex: 0
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741826
+  - first: {x: -10, y: 6, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 0
+      m_TileSpriteIndex: 0
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741826
+  - first: {x: -9, y: 6, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 0
+      m_TileSpriteIndex: 0
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741826
+  - first: {x: -8, y: 6, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 0
+      m_TileSpriteIndex: 0
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741826
+  - first: {x: -7, y: 6, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 0
+      m_TileSpriteIndex: 0
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741826
   m_AnimatedTiles: {}
   m_TileAssetArray:
-  - m_RefCount: 46
+  - m_RefCount: 52
     m_Data: {fileID: 11400000, guid: 6678c11de7a026a49b0b14e015c39aac, type: 2}
   m_TileSpriteArray:
-  - m_RefCount: 46
+  - m_RefCount: 52
     m_Data: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
   m_TileMatrixArray:
-  - m_RefCount: 46
+  - m_RefCount: 52
     m_Data:
       e00: 1
       e01: 0
@@ -831,7 +903,7 @@ Tilemap:
       e32: 0
       e33: 1
   m_TileColorArray:
-  - m_RefCount: 46
+  - m_RefCount: 52
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
@@ -1281,7 +1353,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2, y: 4}
+  m_Size: {x: 1.9, y: 3.9}
   m_EdgeRadius: 0
 --- !u!50 &910394720
 Rigidbody2D:
@@ -1343,8 +1415,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17c7e9eba342d1e4b86d1bbacaba514d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDebug
-  kaboomVector: {x: 1, y: 0}
-  kaboomScale: 100
+  kaboomVector: {x: 0, y: 1}
+  kaboomScale: 200
   wind: 0
   windVector: {x: -1, y: 0}
   windScale: 50
