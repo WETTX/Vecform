@@ -474,6 +474,8 @@
 "Assets/InputSystem_Actions.cs"
 "Assets/Scripts/Player/PlayerDebug.cs"
 "Assets/Scripts/Player/PlayerMove.cs"
+"Assets/Scripts/Spike/Spike.cs"
+"Assets/Tilemap/Rules/SpikeRuleTile.cs"
 -langversion:9.0
 /deterministic
 /optimize+

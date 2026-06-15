@@ -72,8 +72,6 @@ public class PlayerMove : MonoBehaviour
     private void Update()
     {
         CoyotTimeCounterHandle();
-
-        Debug.Log(_gravityForce);
     }
 
     private void FixedUpdate()
@@ -90,6 +88,11 @@ public class PlayerMove : MonoBehaviour
         // прыжок
         inp.Player.Jump.started -= OnJumpBuffer;
         inp.Player.Jump.canceled -= OnJumpCanceled;
+    }
+
+    public void Die()
+    {
+        Debug.Log("Die");
     }
 
     public void ApplyForce(Vector2 force, ForceMode2D forceMode)

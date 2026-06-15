@@ -52,7 +52,9 @@
     <Compile Include="Assets\Scripts\Player\PlayerDebug.cs" />
     <Compile Include="Assets\InputSystem_Actions.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMove.cs" />
+    <Compile Include="Assets\Tilemap\Rules\SpikeRuleTile.cs" />
     <Compile Include="Assets\InputSystem.cs" />
+    <Compile Include="Assets\Scripts\Spike\Spike.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
