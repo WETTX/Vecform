@@ -17,11 +17,12 @@ public class ForceManager : MonoBehaviour
 
     public Vector2 totalForce => _force + _impulse + _jumpImpulse + _gravityDirection * _gravityScalar;
 
-    private Vector2 _force;
-    private Vector2 _impulse;
-    private Vector2 _jumpImpulse; // для игрока
     private Vector2 _gravityDirection = Vector2.down;
     private float _gravityScalar; // сделано не так как другие силы чтобы было удобнее вручную управлять направлением
+    private Vector2 _gravityForce => _gravityDirection * _gravityScalar;
+    private Vector2 _jumpImpulse; // для игрока
+    private Vector2 _force;
+    private Vector2 _impulse;
 
     private Rigidbody2D rb;
     private PhysicsManager physicsManager;
@@ -61,7 +62,7 @@ public class ForceManager : MonoBehaviour
 
     private void ForcesHandle()
     {
-        // плавное ускорение вниз
+        // плавное ускорение вниз, гравитация
         if (rb.linearVelocityY < -1f && !physicsManager.IsGrounded())
         {
             _gravityScalar += _gravityScale * Time.fixedDeltaTime;
@@ -70,6 +71,8 @@ public class ForceManager : MonoBehaviour
         {
             _gravityScalar = _gravityScale;
         }
+
+        // ApplyForce(_gravityForce, ForceMode2D.Force);
 
         // для отскока от потолка
         if (physicsManager.IsCeiling())

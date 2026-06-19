@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 2560
     height: 1349
   m_ShowMode: 4
-  m_Title: Inspector
+  m_Title: Game
   m_RootView: {fileID: 8}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -454,12 +454,12 @@ MonoBehaviour:
       scrollOffset: 0
     m_DynamicPanelContainerData:
     - containerId: overlay-dynamic-panel--left
-      width: 56
+      width: 39.2
       saveData:
         state: 0
         overlayData: []
     - containerId: overlay-dynamic-panel--right
-      width: 56
+      width: 39.2
       saveData:
         state: 0
         overlayData: []
@@ -1328,9 +1328,9 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: -4.154307, y: -4.0698667, z: 0.06319983}
+    m_Target: {x: 2.0123239, y: -8.964835, z: 0.122935474}
     speed: 2
-    m_Value: {x: -4.161143, y: -4.006066, z: 0.05656911}
+    m_Value: {x: 2.0123239, y: -8.964835, z: 0.122935474}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1380,9 +1380,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 14.071823
+    m_Target: 8.098243
     speed: 2
-    m_Value: 14.734894
+    m_Value: 8.098243
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -1768,7 +1768,7 @@ MonoBehaviour:
     m_SelectedInstanceIDs:
     - m_Data: 48836
     m_LastClickedInstanceID: 48836
-    m_HadKeyboardFocusLastEvent: 1
+    m_HadKeyboardFocusLastEvent: 0
     m_ExpandedInstanceIDs:
     - m_Data: 40738
     - m_Data: 38870
@@ -1909,7 +1909,7 @@ MonoBehaviour:
     m_ControlHash: -371814159
     m_PrefName: Preview_InspectorPreview
   m_LastInspectedObjectInstanceID: -1
-  m_LastVerticalScrollValue: 164
+  m_LastVerticalScrollValue: 0
   m_GlobalObjectId: 
   m_InspectorMode: 0
   m_LockTracker:
