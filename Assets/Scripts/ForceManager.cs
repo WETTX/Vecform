@@ -10,12 +10,13 @@ using UnityEngine;
 public class ForceManager : MonoBehaviour
 {
     [SerializeField] private float _gravityScale;
+    [SerializeField] private float _accelerationMultiplier;
     [SerializeField] private float _impulseDecayVelocity = 5f; // скорость угасания импульсов
     // с прыжком всё по-другому тк контроль прыжка
     [SerializeField] private float _jumpImpulseDecayVelocity = 5f;
     [SerializeField] private float _fastJumpImpulseDecayVelocity = 15f;
 
-    public Vector2 totalForce => _force + _impulse + _jumpImpulse + _gravityDirection * _gravityScalar;
+    public Vector2 totalForce => _force + _impulse + _jumpImpulse;
 
     private Vector2 _gravityDirection = Vector2.down;
     private float _gravityScalar; // сделано не так как другие силы чтобы было удобнее вручную управлять направлением
@@ -65,14 +66,13 @@ public class ForceManager : MonoBehaviour
         // плавное ускорение вниз, гравитация
         if (rb.linearVelocityY < -1f && !physicsManager.IsGrounded())
         {
-            _gravityScalar += _gravityScale * Time.fixedDeltaTime;
+            _gravityScalar += _gravityScale * _accelerationMultiplier * Time.fixedDeltaTime;
         }
         else
         {
             _gravityScalar = _gravityScale;
         }
-
-        // ApplyForce(_gravityForce, ForceMode2D.Force);
+        ApplyForce(_gravityForce, ForceMode2D.Force);
 
         // для отскока от потолка
         if (physicsManager.IsCeiling())
@@ -84,7 +84,7 @@ public class ForceManager : MonoBehaviour
         _impulse = Vector2.Lerp(_impulse, Vector2.zero, _impulseDecayVelocity * Time.fixedDeltaTime); // угасание
 
         // угасание прыжка
-        if (_jumpImpulse.y > _gravityScalar)
+        if (rb.linearVelocityY > -1f)
         {
             _jumpImpulse = Vector2.Lerp(_jumpImpulse, Vector2.zero, _jumpImpulseDecayVelocity * Time.fixedDeltaTime);
         }

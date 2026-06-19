@@ -60,7 +60,6 @@ public class PhysicsManager : MonoBehaviour
     private void PhysicsHandle()
     {
         rb.linearVelocity = forceManager.totalForce;
-        Debug.Log(forceManager.totalForce);
 
         forceManager.ZeroForces(); // чтобы не накапливалась и не было инерции
 
