@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(ForceManager))]
 public class PlayerDebug : MonoBehaviour
 {
     [SerializeField] private Vector2 kaboomVector;
@@ -11,9 +12,12 @@ public class PlayerDebug : MonoBehaviour
     [SerializeField] private float windScale = 0;
 
     private InputSystem inp;
+    private ForceManager forceManager;
 
     private void Awake()
     {
+        forceManager = GetComponent<ForceManager>();
+
         inp = new InputSystem();
     }
 
@@ -38,13 +42,13 @@ public class PlayerDebug : MonoBehaviour
 
     private void OnKaboom(InputAction.CallbackContext context)
     {
-        PlayerMove.Instance.ApplyForce(kaboomVector * kaboomScale, ForceMode2D.Impulse);
+        forceManager.ApplyForce(kaboomVector * kaboomScale, ForceMode2D.Impulse);
         // Debug.Log("kaboom");
     }
 
     private void Wind()
     {
-        PlayerMove.Instance.ApplyForce(windVector * windScale * Convert.ToInt32(wind), ForceMode2D.Force);
+        forceManager.ApplyForce(windVector * windScale * Convert.ToInt32(wind), ForceMode2D.Force);
         // Debug.Log("wind");
     }
 }

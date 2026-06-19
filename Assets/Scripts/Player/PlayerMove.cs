@@ -6,6 +6,11 @@ using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
+/// <summary>
+/// обрабатывает кнопки игрока
+/// </summary>
+[RequireComponent(typeof(PhysicsManager))]
 public class PlayerMove : MonoBehaviour
 {
     public static PlayerMove Instance { get; private set; }
@@ -14,36 +19,27 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private float _moveSpeed = 23f;
     [SerializeField] private float _jumpScale = 121f;
     [SerializeField] private float _canceledJumpSpeedMultiplier = 0.3f; // какая часть скорости останется при отпускании кнопки прыжка
-    [SerializeField] private float _coyoteTime = 0.08f;
+    [SerializeField] private float _coyoteTime = 0.07f;
     [Tooltip("NOT 0")]
     [SerializeField] private float _jumpBufferTime = 0.08f; // NOT 0
 
     [Space(5)]
     [Header("Physics")]
-    [SerializeField] private float _externalForceDecayVelocity = 5f; // скорость угасания внешних импульсов
-    [SerializeField] private float _jumpForceDecayVelocity = 5f; // скорость угасания импульса прыжка
-    [SerializeField] private float _fastJumpForceDecayVelocity = 15f; // используется когда началось падение чтобы не было эффекта плавного падения после прыжка
-    [SerializeField] private float _gravityScale = 3.5f;
-
-    // силы
-    private Vector2 _internalForce;
-    private Vector2 _jumpForce; // отдельно чтобы был красивый контроль прыжка
-    private Vector2 _externalForce;
-    private Vector2 _gravityVector = Vector2.down;
-    private float _gravityForce; // сделано не так как другие силы чтобы было удобнее вручную управлять направлением
-    private Vector2 totalForce => _internalForce + _externalForce + _jumpForce + _gravityVector * _gravityForce;
+    // [SerializeField] private float _gravityScale = 3.5f;
 
     private float _coyoteTimeCounter;
     private float _jumpBufferTimeCounter;
-    private float _totalGravityScale => _gravityScale * 9.8f; /// для удобства
+    // private float _totalGravityScale => _gravityScale * 9.8f; /// для удобства
 
 
     private Rigidbody2D rb;
-    private BoxCollider2D col;
+    // private BoxCollider2D col;
     private InputSystem inp;
+    private ForceManager forceManager;
+    private PhysicsManager physicsManager;
 
 
-    public bool IsCanJump { get { return IsGrounded() || _coyoteTimeCounter > 0f; } }
+    public bool IsCanJump { get { return physicsManager.IsGrounded() || _coyoteTimeCounter > 0f; } }
 
     public bool IsJustJump { get; private set; } // костыль, флаг, чтобы не было дабл-прыжка
 
@@ -52,7 +48,9 @@ public class PlayerMove : MonoBehaviour
         Instance = this;
 
         rb = GetComponent<Rigidbody2D>();
-        col = GetComponent<BoxCollider2D>();
+        // col = GetComponent<BoxCollider2D>();
+        forceManager = GetComponent<ForceManager>();
+        physicsManager = GetComponent<PhysicsManager>();
 
         inp = new InputSystem();
     }
@@ -67,8 +65,6 @@ public class PlayerMove : MonoBehaviour
         inp.Player.Jump.canceled += OnJumpCanceled;
     }
 
-    private void Start() { }
-
     private void Update()
     {
         CoyotTimeCounterHandle();
@@ -76,7 +72,7 @@ public class PlayerMove : MonoBehaviour
 
     private void FixedUpdate()
     {
-        ForcesHandle();
+        MoveHandle();
         JumpHandle();
     }
 
@@ -95,13 +91,6 @@ public class PlayerMove : MonoBehaviour
         Debug.Log("Die");
     }
 
-    public void ApplyForce(Vector2 force, ForceMode2D forceMode)
-    {
-        if (forceMode == ForceMode2D.Force) { _externalForce += force * Time.deltaTime; }
-
-        else if (forceMode == ForceMode2D.Impulse) { _externalForce += force; }
-    }
-
     private void OnJumpBuffer(InputAction.CallbackContext context) // начинает таймер буфера
     {
         _jumpBufferTimeCounter = _jumpBufferTime;
@@ -111,7 +100,7 @@ public class PlayerMove : MonoBehaviour
     {
         if (_jumpBufferTimeCounter > 0 && IsCanJump)
         {
-            _jumpForce.y += _jumpScale;
+            forceManager.ApplyJumpImpulse(Vector2.up * _jumpScale);
             _coyoteTimeCounter = 0f;
             _jumpBufferTimeCounter = 0f;
             IsJustJump = true;
@@ -125,14 +114,14 @@ public class PlayerMove : MonoBehaviour
     {
         if (rb.linearVelocityY > 1f)
         {
-            _jumpForce.y *= _canceledJumpSpeedMultiplier;
+            forceManager.MultiplyJumpImpulse(_canceledJumpSpeedMultiplier);
         }
         IsJustJump = false;
     }
 
     private void CoyotTimeCounterHandle()
     {
-        if (IsGrounded() && !IsJustJump)
+        if (physicsManager.IsGrounded() && !IsJustJump)
         {
             _coyoteTimeCounter = _coyoteTime;
         }
@@ -142,89 +131,10 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
-    private bool IsGrounded()
+    private void MoveHandle() // обрабатывает движение игрока
     {
-        Bounds colliderBounds;
-        Vector2 rayOrigin;
-        float checkGroundedDistance = 0.01f;
-
-        colliderBounds = col.bounds;
-        rayOrigin = new Vector2(colliderBounds.min.x, colliderBounds.min.y - 0.01f); // 0.01 чтобы не срабатывало на игрока
-        RaycastHit2D hit1 = Physics2D.Raycast(rayOrigin, Vector2.down, checkGroundedDistance);
-
-        colliderBounds = col.bounds;
-        rayOrigin = new Vector2(colliderBounds.max.x, colliderBounds.min.y - 0.01f); // 0.01 чтобы не срабатывало на игрока
-        RaycastHit2D hit2 = Physics2D.Raycast(rayOrigin, Vector2.down, checkGroundedDistance);
-
-        return hit1.collider != null || hit2.collider != null;
-    }
-
-    private bool IsCeiling() // касается ли потолка
-    {
-        Bounds colliderBounds;
-        Vector2 rayOrigin;
-        float checkGroundedDistance = 0.01f;
-
-        colliderBounds = col.bounds;
-        rayOrigin = new Vector2(colliderBounds.min.x, colliderBounds.max.y + 0.01f); // 0.01 чтобы не срабатывало на игрока
-        RaycastHit2D hit1 = Physics2D.Raycast(rayOrigin, Vector2.up, checkGroundedDistance);
-
-        colliderBounds = col.bounds;
-        rayOrigin = new Vector2(colliderBounds.max.x, colliderBounds.max.y + 0.01f); // 0.01 чтобы не срабатывало на игрока
-        RaycastHit2D hit2 = Physics2D.Raycast(rayOrigin, Vector2.up, checkGroundedDistance);
-
-        return hit1.collider != null || hit2.collider != null;
-    }
-
-    private void ForcesHandle() // обрабатывает силы и движение игрока
-    {
-        // плавное ускорение
-        if (rb.linearVelocityY > -1f && IsGrounded())
-        {
-            _gravityForce = _totalGravityScale;
-        }
-        else
-        {
-            _gravityForce += _totalGravityScale * Time.deltaTime;
-        }
-
-        // внутренняя скорость
         Vector2 moveVector = inp.Player.Move.ReadValue<Vector2>(); // показания с A, D
-        _internalForce = moveVector * _moveSpeed;
 
-        // применение общей скорости с учётом удара о потолок
-        if (IsCeiling() && totalForce.y > 0) { ResetForcesY(); } // для отскока от потолка
-
-        rb.linearVelocity = totalForce;
-
-        // угасание для Impulse
-        _externalForce = Vector2.Lerp(_externalForce, Vector2.zero, _externalForceDecayVelocity * Time.deltaTime);
-
-        // угасание для прыжка
-        if (_jumpForce.y > _gravityForce)
-        {
-            _jumpForce = Vector2.Lerp(_jumpForce, Vector2.zero, _jumpForceDecayVelocity * Time.deltaTime);
-        }
-        else
-        {
-            _jumpForce = Vector2.Lerp(_jumpForce, Vector2.zero, _fastJumpForceDecayVelocity * Time.deltaTime);
-        }
-
-        // обнуление малой скорости
-        if (Mathf.Abs(rb.linearVelocityX) < 0.1f)
-        {
-            rb.linearVelocityX = 0;
-        }
-        if (Mathf.Abs(rb.linearVelocityY) < 0.1f)
-        {
-            rb.linearVelocityY = 0;
-        }
-    }
-
-    private void ResetForcesY()
-    {
-        _internalForce.y = 0f;
-        _jumpForce.y = 0f;
-        _externalForce.y = 0f;
+        forceManager.ApplyForce(moveVector * _moveSpeed, ForceMode2D.Force);
     }
 }
