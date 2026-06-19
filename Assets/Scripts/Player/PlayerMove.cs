@@ -41,9 +41,9 @@ public class PlayerMove : MonoBehaviour
 
 
     private bool IsCanJump { get { return physicsManager.IsGrounded() || _coyoteTimeCounter > 0f; } }
-    private bool IsWantJump { get { return _jumpBufferTimeCounter > 0 && IsJustJump; } } // для проверки буфера нажата ли вообще кнопка во время начала прыжка
+    private bool IsWantJump { get { return _jumpBufferTimeCounter > 0 && isJustJump; } } // для проверки буфера нажата ли вообще кнопка во время начала прыжка
 
-    private bool IsJustJump; // костыль, true пока нажат пробел
+    private bool isJustJump; // костыль, true пока нажат пробел
 
     private void Awake()
     {
@@ -95,7 +95,7 @@ public class PlayerMove : MonoBehaviour
 
     private void OnJumpStarted(InputAction.CallbackContext context) // начинает таймер буфера
     {
-        IsJustJump = true;
+        isJustJump = true;
 
         _jumpBufferTimeCounter = _jumpBufferTime; // хочет прыгнуть
     }
@@ -120,12 +120,12 @@ public class PlayerMove : MonoBehaviour
             forceManager.MultiplyJumpImpulse(_canceledJumpSpeedMultiplier);
         }
 
-        IsJustJump = false;
+        isJustJump = false;
     }
 
     private void CoyotTimeCounterHandle()
     {
-        if (physicsManager.IsGrounded() && !IsJustJump)
+        if (physicsManager.IsGrounded() && !isJustJump)
         {
             _coyoteTimeCounter = _coyoteTime;
         }
