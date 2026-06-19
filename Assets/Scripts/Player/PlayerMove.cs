@@ -107,7 +107,7 @@ public class PlayerMove : MonoBehaviour
             // Debug.Log("jump");
         }
 
-        _jumpBufferTimeCounter -= Time.deltaTime;
+        _jumpBufferTimeCounter -= Time.fixedDeltaTime;
     }
 
     private void OnJumpCanceled(InputAction.CallbackContext context) // отвечает за контроль прыжка

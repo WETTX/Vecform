@@ -35,13 +35,11 @@ public class ForceManager : MonoBehaviour
     private void FixedUpdate()
     {
         ForcesHandle();
-
-        Debug.Log(_gravityScalar);
     }
 
     public void ApplyForce(Vector2 applicableForce, ForceMode2D forceMode)
     {
-        if (forceMode == ForceMode2D.Force) { _force += applicableForce * Time.deltaTime; }
+        if (forceMode == ForceMode2D.Force) { _force += applicableForce * 10 * Time.fixedDeltaTime; } // * 10 чтобы не писать 1500 и тп
 
         else if (forceMode == ForceMode2D.Impulse) { _impulse += applicableForce; }
     }
@@ -66,7 +64,7 @@ public class ForceManager : MonoBehaviour
         // плавное ускорение вниз
         if (rb.linearVelocityY < -1f && !physicsManager.IsGrounded())
         {
-            _gravityScalar += _gravityScale * Time.deltaTime;
+            _gravityScalar += _gravityScale * Time.fixedDeltaTime;
         }
         else
         {
@@ -80,16 +78,16 @@ public class ForceManager : MonoBehaviour
             _jumpImpulse.y = 0f;
         }
 
-        _impulse = Vector2.Lerp(_impulse, Vector2.zero, _impulseDecayVelocity * Time.deltaTime); // угасание
+        _impulse = Vector2.Lerp(_impulse, Vector2.zero, _impulseDecayVelocity * Time.fixedDeltaTime); // угасание
 
         // угасание прыжка
         if (_jumpImpulse.y > _gravityScalar)
         {
-            _jumpImpulse = Vector2.Lerp(_jumpImpulse, Vector2.zero, _jumpImpulseDecayVelocity * Time.deltaTime);
+            _jumpImpulse = Vector2.Lerp(_jumpImpulse, Vector2.zero, _jumpImpulseDecayVelocity * Time.fixedDeltaTime);
         }
         else
         {
-            _jumpImpulse = Vector2.Lerp(_jumpImpulse, Vector2.zero, _fastJumpImpulseDecayVelocity * Time.deltaTime);
+            _jumpImpulse = Vector2.Lerp(_jumpImpulse, Vector2.zero, _fastJumpImpulseDecayVelocity * Time.fixedDeltaTime);
         }
     }
 }

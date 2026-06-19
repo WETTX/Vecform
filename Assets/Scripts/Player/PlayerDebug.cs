@@ -21,7 +21,7 @@ public class PlayerDebug : MonoBehaviour
         inp = new InputSystem();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         Wind();
     }
