@@ -3,7 +3,7 @@ using UnityEngine;
 
 
 /// <summary>
-/// хранит силы
+/// хранит силы (и гравитацию)
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(PhysicsManager))]
@@ -41,9 +41,15 @@ public class ForceManager : MonoBehaviour
 
     public void ApplyForce(Vector2 applicableForce, ForceMode2D forceMode)
     {
-        if (forceMode == ForceMode2D.Force) { _force += applicableForce * 10 * Time.fixedDeltaTime; } // * 10 чтобы не писать 1500 и тп
+        if (forceMode == ForceMode2D.Force)
+        {
+            _force += applicableForce * 10 * Time.fixedDeltaTime; // * 10 чтобы не писать 1500 и тп
+        }
 
-        else if (forceMode == ForceMode2D.Impulse) { _impulse += applicableForce; }
+        else if (forceMode == ForceMode2D.Impulse)
+        {
+            _impulse += applicableForce;
+        }
     }
 
     public void ZeroForces() /// обнуляет <see cref="_force"/>

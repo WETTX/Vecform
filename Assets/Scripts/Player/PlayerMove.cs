@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Data;
 using NUnit.Framework;
 using Unity.VisualScripting;
 using UnityEditor.Rendering.LookDev;
@@ -39,9 +40,10 @@ public class PlayerMove : MonoBehaviour
     private PhysicsManager physicsManager;
 
 
-    public bool IsCanJump { get { return physicsManager.IsGrounded() || _coyoteTimeCounter > 0f; } }
+    private bool IsCanJump { get { return physicsManager.IsGrounded() || _coyoteTimeCounter > 0f; } }
+    private bool IsWantJump { get { return _jumpBufferTimeCounter > 0 && IsJustJump; } } // для проверки буфера нажата ли вообще кнопка во время начала прыжка
 
-    public bool IsJustJump { get; private set; } // костыль, флаг, чтобы не было дабл-прыжка
+    private bool IsJustJump; // костыль, true пока нажат пробел
 
     private void Awake()
     {
@@ -61,7 +63,7 @@ public class PlayerMove : MonoBehaviour
         inp.Player.Enable();
 
         //прыжок
-        inp.Player.Jump.started += OnJumpBuffer;
+        inp.Player.Jump.started += OnJumpStarted;
         inp.Player.Jump.canceled += OnJumpCanceled;
     }
 
@@ -82,7 +84,7 @@ public class PlayerMove : MonoBehaviour
         inp.Player.Disable();
 
         // прыжок
-        inp.Player.Jump.started -= OnJumpBuffer;
+        inp.Player.Jump.started -= OnJumpStarted;
         inp.Player.Jump.canceled -= OnJumpCanceled;
     }
 
@@ -91,31 +93,33 @@ public class PlayerMove : MonoBehaviour
         Debug.Log("Die");
     }
 
-    private void OnJumpBuffer(InputAction.CallbackContext context) // начинает таймер буфера
+    private void OnJumpStarted(InputAction.CallbackContext context) // начинает таймер буфера
     {
-        _jumpBufferTimeCounter = _jumpBufferTime;
+        IsJustJump = true;
+
+        _jumpBufferTimeCounter = _jumpBufferTime; // хочет прыгнуть
     }
 
     private void JumpHandle()
     {
-        if (_jumpBufferTimeCounter > 0 && IsCanJump)
+        // прыжок
+        if (IsWantJump && IsCanJump)
         {
             forceManager.ApplyJumpImpulse(Vector2.up * _jumpScale);
             _coyoteTimeCounter = 0f;
             _jumpBufferTimeCounter = 0f;
-            IsJustJump = true;
-            // Debug.Log("jump");
         }
 
-        _jumpBufferTimeCounter -= Time.fixedDeltaTime;
+        _jumpBufferTimeCounter -= Time.fixedDeltaTime; // таймер
     }
 
     private void OnJumpCanceled(InputAction.CallbackContext context) // отвечает за контроль прыжка
     {
-        if (rb.linearVelocityY > 1f)
+        if (!physicsManager.IsFalling)
         {
             forceManager.MultiplyJumpImpulse(_canceledJumpSpeedMultiplier);
         }
+
         IsJustJump = false;
     }
 

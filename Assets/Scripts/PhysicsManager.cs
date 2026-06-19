@@ -11,6 +11,9 @@ public class PhysicsManager : MonoBehaviour
     private ForceManager forceManager;
     private Rigidbody2D rb;
 
+    public bool IsFalling { get { return rb.linearVelocityY < 0.1f; } }
+
+
     private void Awake()
     {
         col = GetComponent<BoxCollider2D>();
