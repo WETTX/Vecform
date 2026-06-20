@@ -51,8 +51,8 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Player\PlayerDebug.cs" />
     <Compile Include="Assets\Scripts\PhysicsManager.cs" />
+    <Compile Include="Assets\Scripts\Player\PlayerLife.cs" />
     <Compile Include="Assets\Scripts\ForceManager.cs" />
-    <Compile Include="Assets\Scripts\Player\NewMonoBehaviourScript.cs" />
     <Compile Include="Assets\InputSystem_Actions.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMove.cs" />
     <Compile Include="Assets\Tilemap\Rules\SpikeRuleTile.cs" />

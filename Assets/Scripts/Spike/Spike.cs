@@ -8,7 +8,7 @@ public class Spike : MonoBehaviour
     {
         if (collision.CompareTag(PLAYER))
         {
-            PlayerMove.Instance.Die();
+            PlayerLife.Instance.Death();
         }
     }
 }

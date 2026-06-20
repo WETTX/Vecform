@@ -11,6 +11,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// обрабатывает кнопки игрока
 /// </summary>
+
 [RequireComponent(typeof(PhysicsManager))]
 public class PlayerMove : MonoBehaviour
 {
@@ -59,12 +60,30 @@ public class PlayerMove : MonoBehaviour
 
     private void OnEnable()
     {
-        //передвижение
+        // передвижение
         inp.Player.Enable();
 
-        //прыжок
+        // прыжок
         inp.Player.Jump.started += OnJumpStarted;
         inp.Player.Jump.canceled += OnJumpCanceled;
+
+        // жизнь
+        PlayerLife.OnDeath += OnDeath;
+        PlayerLife.OnRespawn += OnRespawn;
+    }
+
+    private void OnDisable()
+    {
+        // передвижение
+        inp.Player.Disable();
+
+        // прыжок
+        inp.Player.Jump.started -= OnJumpStarted;
+        inp.Player.Jump.canceled -= OnJumpCanceled;
+
+        // жизнь
+        PlayerLife.OnDeath -= OnDeath;
+        PlayerLife.OnRespawn -= OnRespawn;
     }
 
     private void Update()
@@ -78,19 +97,21 @@ public class PlayerMove : MonoBehaviour
         JumpHandle();
     }
 
-    private void OnDisable()
+    public void ControlEnable()
     {
-        // передвижение
-        inp.Player.Disable();
-
-        // прыжок
-        inp.Player.Jump.started -= OnJumpStarted;
-        inp.Player.Jump.canceled -= OnJumpCanceled;
+        inp.Player.Move.Enable();
+        inp.Player.Jump.Enable();
     }
 
-    public void Die()
+    public void ControlDisable()
     {
-        Debug.Log("Die");
+        inp.Player.Move.Disable();
+        inp.Player.Jump.Disable();
+    }
+
+    public void Teleport(Vector2 coordinates)
+    {
+        transform.position = coordinates;
     }
 
     private void OnJumpStarted(InputAction.CallbackContext context) // начинает таймер буфера
@@ -140,5 +161,16 @@ public class PlayerMove : MonoBehaviour
         Vector2 moveVector = inp.Player.Move.ReadValue<Vector2>(); // показания с A, D
 
         forceManager.ApplyForce(moveVector * _moveSpeed, ForceMode2D.Force);
+    }
+
+    private void OnDeath()
+    {
+        ControlDisable();
+    }
+
+    private void OnRespawn()
+    {
+        Teleport(PlayerLife.Instance.spawnPoint.position);
+        Instance.ControlEnable();
     }
 }

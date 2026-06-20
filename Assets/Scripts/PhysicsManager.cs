@@ -7,11 +7,11 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PhysicsManager : MonoBehaviour
 {
+    public bool IsFalling { get { return rb.linearVelocityY < 0.1f; } }
+
     private BoxCollider2D col;
     private ForceManager forceManager;
     private Rigidbody2D rb;
-
-    public bool IsFalling { get { return rb.linearVelocityY < 0.1f; } }
 
 
     private void Awake()
@@ -21,9 +21,26 @@ public class PhysicsManager : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
+    private void OnEnable()
+    {
+        // жизнь
+        PlayerLife.OnDeath += OnDeath;
+        PlayerLife.OnRespawn += OnRespawn;
+    }
+
+    private void OnDisable()
+    {
+        // жизнь
+        PlayerLife.OnDeath -= OnDeath;
+        PlayerLife.OnRespawn -= OnRespawn;
+    }
+
     private void FixedUpdate()
     {
-        PhysicsHandle();
+        if (PlayerLife.Instance.isAlive)
+        {
+            PhysicsHandle();
+        }
     }
 
     public bool IsGrounded()
@@ -75,5 +92,16 @@ public class PhysicsManager : MonoBehaviour
         {
             rb.linearVelocityY = 0;
         }
+    }
+
+    private void OnDeath()
+    {
+        rb.linearVelocity = Vector2.zero;
+        rb.bodyType = RigidbodyType2D.Static;
+    }
+
+    private void OnRespawn()
+    {
+        rb.bodyType = RigidbodyType2D.Dynamic;
     }
 }

@@ -9,6 +9,7 @@ using UnityEngine;
 [RequireComponent(typeof(PhysicsManager))]
 public class ForceManager : MonoBehaviour
 {
+    [SerializeField] private Vector2 _gravityDirection = Vector2.down;
     [SerializeField] private float _gravityScale;
     [SerializeField] private float _accelerationMultiplier;
     [SerializeField] private float _impulseDecayVelocity = 5f; // скорость угасания импульсов
@@ -18,9 +19,8 @@ public class ForceManager : MonoBehaviour
 
     public Vector2 totalForce => _force + _impulse + _jumpImpulse;
 
-    private Vector2 _gravityDirection = Vector2.down;
     private float _gravityScalar; // сделано не так как другие силы чтобы было удобнее вручную управлять направлением
-    private Vector2 _gravityForce => _gravityDirection * _gravityScalar;
+    private Vector2 _gravityForce => _gravityDirection.normalized * _gravityScalar;
     private Vector2 _jumpImpulse; // для игрока
     private Vector2 _force;
     private Vector2 _impulse;
@@ -34,6 +34,18 @@ public class ForceManager : MonoBehaviour
         physicsManager = GetComponent<PhysicsManager>();
     }
 
+    private void OnEnable()
+    {
+        // жизнь
+        PlayerLife.OnDeath += OnDeath;
+    }
+
+    private void Oisable()
+    {
+        // жизнь
+        PlayerLife.OnDeath -= OnDeath;
+    }
+
     private void FixedUpdate()
     {
         ForcesHandle();
@@ -41,14 +53,17 @@ public class ForceManager : MonoBehaviour
 
     public void ApplyForce(Vector2 applicableForce, ForceMode2D forceMode)
     {
-        if (forceMode == ForceMode2D.Force)
+        if (PlayerLife.Instance.isAlive)
         {
-            _force += applicableForce * 10 * Time.fixedDeltaTime; // * 10 чтобы не писать 1500 и тп
-        }
+            if (forceMode == ForceMode2D.Force)
+            {
+                _force += applicableForce * 10 * Time.fixedDeltaTime; // * 10 чтобы не писать 1500 и тп
+            }
 
-        else if (forceMode == ForceMode2D.Impulse)
-        {
-            _impulse += applicableForce;
+            else if (forceMode == ForceMode2D.Impulse)
+            {
+                _impulse += applicableForce;
+            }
         }
     }
 
@@ -65,6 +80,13 @@ public class ForceManager : MonoBehaviour
     public void MultiplyJumpImpulse(float multiplier)
     {
         _jumpImpulse *= multiplier;
+    }
+
+    private void ZeroForcesAndImpulses()
+    {
+        _force = Vector2.zero;
+        _impulse = Vector2.zero;
+        _jumpImpulse = Vector2.zero;
     }
 
     private void ForcesHandle()
@@ -98,5 +120,10 @@ public class ForceManager : MonoBehaviour
         {
             _jumpImpulse = Vector2.Lerp(_jumpImpulse, Vector2.zero, _fastJumpImpulseDecayVelocity * Time.fixedDeltaTime);
         }
+    }
+
+    private void OnDeath()
+    {
+        ZeroForcesAndImpulses();
     }
 }
