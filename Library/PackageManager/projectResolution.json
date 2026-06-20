@@ -89,6 +89,16 @@
       "source": "registry",
       "testable": false
     },
+    "com.unity.cinemachine@3.1.7": {
+      "name": "com.unity.cinemachine",
+      "displayName": "Cinemachine",
+      "resolvedPath": "C:\\Users\\alext\\UnityProjects\\Vecform\\Library\\PackageCache\\com.unity.cinemachine@f3f96bcb59af",
+      "fingerprint": "f3f96bcb59af572d4d28704d53f6388471d7dd21",
+      "editorCompatibility": "2022.3.0a1",
+      "version": "3.1.7",
+      "source": "registry",
+      "testable": false
+    },
     "com.unity.collab-proxy@2.11.4": {
       "name": "com.unity.collab-proxy",
       "displayName": "Unity Version Control",
@@ -517,6 +527,16 @@
       "source": "builtin",
       "testable": false
     },
+    "com.unity.splines@2.8.3": {
+      "name": "com.unity.splines",
+      "displayName": "Splines",
+      "resolvedPath": "C:\\Users\\alext\\UnityProjects\\Vecform\\Library\\PackageCache\\com.unity.splines@56b2023b4b9f",
+      "fingerprint": "56b2023b4b9fd77fdc5b5ed3a4b62c388d76931c",
+      "editorCompatibility": "2022.3.0a1",
+      "version": "2.8.3",
+      "source": "registry",
+      "testable": false
+    },
     "com.unity.2d.common@12.0.2": {
       "name": "com.unity.2d.common",
       "displayName": "2D Common",
@@ -564,6 +584,16 @@
       "fingerprint": "07790c2d06d99e35fe39459bd582a965d07700c4",
       "editorCompatibility": "2022.3.0a1",
       "version": "1.8.28",
+      "source": "registry",
+      "testable": false
+    },
+    "com.unity.settings-manager@2.1.1": {
+      "name": "com.unity.settings-manager",
+      "displayName": "Settings Manager",
+      "resolvedPath": "C:\\Users\\alext\\UnityProjects\\Vecform\\Library\\PackageCache\\com.unity.settings-manager@0b8638c5ce86",
+      "fingerprint": "0b8638c5ce86009d785da17b17aaf629047f64ce",
+      "editorCompatibility": "2022.3.0a1",
+      "version": "2.1.1",
       "source": "registry",
       "testable": false
     },
